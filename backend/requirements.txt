@@ -1,0 +1,13 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
+pydantic==2.10.4
+pymongo==4.10.1
+python-dotenv==1.0.1
+razorpay==1.4.2
+
+# The razorpay SDK still imports pkg_resources at import time, which
+# setuptools >= 82.0.0 (Feb 2026) removed entirely. Pin below that so a
+# fresh `pip install -r requirements.txt` doesn't break on import.
+setuptools<82
