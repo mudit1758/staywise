@@ -11,3 +11,4 @@ razorpay==1.4.2
 # setuptools >= 82.0.0 (Feb 2026) removed entirely. Pin below that so a
 # fresh `pip install -r requirements.txt` doesn't break on import.
 setuptools<82
+resend
