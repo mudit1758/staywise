@@ -342,13 +342,50 @@ function Header() {
           </button>
 
           {user.data ? (
-            <Link href="/dashboard">
-              Your account
-            </Link>
+            <>
+              <Link
+                href={
+                  user.data.role === "owner"
+                    ? "/owner/dashboard"
+                    : "/dashboard"
+                }
+                onClick={() =>
+                  setMenuOpen(false)
+                }
+              >
+                Your account
+              </Link>
+
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  logout();
+                }}
+              >
+                <LogOut size={16} />
+                Log out
+              </button>
+            </>
           ) : (
-            <Link href="/login">
-              Log in
-            </Link>
+            <>
+              <Link
+                href="/login"
+                onClick={() =>
+                  setMenuOpen(false)
+                }
+              >
+                Log in
+              </Link>
+
+              <Link
+                href="/register"
+                onClick={() =>
+                  setMenuOpen(false)
+                }
+              >
+                Join Staywise
+              </Link>
+            </>
           )}
 
         </div>
@@ -2297,6 +2334,190 @@ function BookingCard({
 
 
 // ============================================================
+// CANCELLATION DIALOG
+// ============================================================
+
+function getCancellationQuote(booking) {
+  const total =
+    Number(
+      booking.totalAmount || 0
+    );
+
+  const feePercent =
+    Number(
+      booking.refundPolicyPercent ??
+        15
+    );
+
+  const refundPercent =
+    Number(
+      booking.refundPercent ??
+        (100 - feePercent)
+    );
+
+  const cancellationFee =
+    Number(
+      booking.refundFeeAmount ??
+        (
+          total *
+          feePercent /
+          100
+        )
+    );
+
+  const refundAmount =
+    Number(
+      booking.refundAmount ??
+        (
+          total -
+          cancellationFee
+        )
+    );
+
+  return {
+    total,
+    feePercent,
+    refundPercent,
+    cancellationFee,
+    refundAmount,
+  };
+}
+
+
+function CancelBookingDialog({
+  booking,
+  busy = false,
+  error = "",
+  onClose,
+  onConfirm,
+}) {
+  if (!booking) {
+    return null;
+  }
+
+  const quote =
+    getCancellationQuote(
+      booking
+    );
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+    >
+
+      <div
+        className="modal confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-booking-title"
+      >
+
+        <button
+          className="modal-close"
+          onClick={onClose}
+          aria-label="Close"
+          disabled={busy}
+        >
+          <X size={19} />
+        </button>
+
+
+        <span className="confirm-icon danger">
+          <CircleAlert size={22} />
+        </span>
+
+
+        <p className="eyebrow">
+          Review cancellation
+        </p>
+
+        <h2 id="cancel-booking-title">
+          Cancel this booking?
+        </h2>
+
+        <p className="muted">
+          {booking.hotelName}
+          {" - "}
+          {booking.roomName}
+        </p>
+
+
+        <div className="confirm-breakdown">
+
+          <Info
+            label="Total paid"
+            value={money.format(
+              quote.total
+            )}
+          />
+
+          <Info
+            label={`Charge (${quote.feePercent}%)`}
+            value={money.format(
+              quote.cancellationFee
+            )}
+          />
+
+          <Info
+            label={`Refund (${quote.refundPercent}%)`}
+            value={money.format(
+              quote.refundAmount
+            )}
+          />
+
+        </div>
+
+
+        <p className="notice">
+          The refund will be submitted to
+          the original payment method after
+          cancellation.
+        </p>
+
+
+        {error && (
+          <p className="error">
+            <CircleAlert size={16} />
+            {error}
+          </p>
+        )}
+
+
+        <div className="confirm-actions">
+
+          <button
+            className="button outline"
+            onClick={onClose}
+            disabled={busy}
+          >
+            Keep booking
+          </button>
+
+          <button
+            className="button danger solid"
+            onClick={onConfirm}
+            disabled={busy}
+          >
+            {busy && (
+              <LoaderCircle
+                size={17}
+                className="spin"
+              />
+            )}
+            Cancel booking
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
 // GUEST DASHBOARD
 // ============================================================
 
@@ -2309,6 +2530,15 @@ function GuestDashboard() {
 
   const bookings =
     result.data || [];
+
+  const [cancelBooking, setCancelBooking] =
+    useState(null);
+
+  const [cancelError, setCancelError] =
+    useState("");
+
+  const [cancelBusy, setCancelBusy] =
+    useState(false);
 
   const upcoming =
     bookings.filter(
@@ -2323,41 +2553,31 @@ function GuestDashboard() {
 
   const handleCancel =
     async (booking) => {
+      setCancelBooking(booking);
+      setCancelError("");
+    };
 
-      const total =
-        Number(
-          booking.totalAmount || 0
-        );
 
-      const fee =
-        total * 0.15;
-
-      const refund =
-        total - fee;
-
-      const confirmed =
-        window.confirm(
-          `Are you sure you want to cancel this booking?\n\n` +
-          `Total paid: ${money.format(total)}\n` +
-          `Cancellation charge (15%): ${money.format(fee)}\n` +
-          `Refund (85%): ${money.format(refund)}\n\n` +
-          `The remaining 85% will be submitted for refund.`
-        );
-
-      if (!confirmed) {
+  const confirmCancel =
+    async () => {
+      if (!cancelBooking) {
         return;
       }
 
+      setCancelBusy(true);
+      setCancelError("");
+
       try {
         await api.cancel(
-          booking.id
+          cancelBooking.id
         );
 
         window.location.reload();
       } catch (err) {
-        window.alert(
+        setCancelError(
           err.message
         );
+        setCancelBusy(false);
       }
     };
 
@@ -2475,6 +2695,19 @@ function GuestDashboard() {
 
       </main>
 
+      <CancelBookingDialog
+        booking={cancelBooking}
+        busy={cancelBusy}
+        error={cancelError}
+        onClose={() => {
+          if (!cancelBusy) {
+            setCancelBooking(null);
+            setCancelError("");
+          }
+        }}
+        onConfirm={confirmCancel}
+      />
+
     </Page>
   );
 }
@@ -2499,6 +2732,9 @@ function BookingDetail() {
 
   const [payError, setPayError] =
     useState("");
+
+  const [cancelDialogOpen, setCancelDialogOpen] =
+    useState(false);
 
 
   const booking =
@@ -2664,59 +2900,6 @@ function BookingDetail() {
 
   const cancel =
     async () => {
-
-      const total =
-        Number(
-          booking.totalAmount || 0
-        );
-
-      const feePercent =
-        Number(
-          booking.refundPolicyPercent ??
-            15
-        );
-
-      const refundPercent =
-        Number(
-          booking.refundPercent ??
-            (100 - feePercent)
-        );
-
-      const cancellationFee =
-        Number(
-          booking.refundFeeAmount ??
-            (
-              total *
-              feePercent /
-              100
-            )
-        );
-
-      const refundAmount =
-        Number(
-          booking.refundAmount ??
-            (
-              total -
-              cancellationFee
-            )
-        );
-
-
-      const confirmed =
-        window.confirm(
-          `Are you sure you want to cancel this booking?\n\n` +
-          `Total amount paid: ${money.format(total)}\n` +
-          `Cancellation charge (${feePercent}%): ${money.format(cancellationFee)}\n` +
-          `Refund (${refundPercent}%): ${money.format(refundAmount)}\n\n` +
-          `Click OK to cancel and submit the refund.`
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
       setBusy(true);
       setPayError("");
 
@@ -2946,7 +3129,10 @@ function BookingDetail() {
               <button
                 className="button danger"
                 disabled={busy}
-                onClick={cancel}
+                onClick={() => {
+                  setPayError("");
+                  setCancelDialogOpen(true)
+                }}
               >
                 {busy && (
                   <LoaderCircle
@@ -3113,9 +3299,26 @@ function BookingDetail() {
               </div>
 
             </section>
-          )}
+        )}
 
       </main>
+
+      <CancelBookingDialog
+        booking={
+          cancelDialogOpen
+            ? booking
+            : null
+        }
+        busy={busy}
+        error={payError}
+        onClose={() => {
+          if (!busy) {
+            setCancelDialogOpen(false);
+            setPayError("");
+          }
+        }}
+        onConfirm={cancel}
+      />
 
     </Page>
   );
