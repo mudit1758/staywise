@@ -293,6 +293,14 @@ button {
 }
 
 
+.mobile-menu a,
+.mobile-menu button {
+  min-height: 42px;
+
+  align-items: center;
+}
+
+
 /* ============================================================
    HERO
    ============================================================ */
@@ -1545,6 +1553,10 @@ em {
   background: var(--card);
 
   position: relative;
+
+  box-shadow:
+    0 24px 70px
+    #10272540;
 }
 
 
@@ -1655,6 +1667,105 @@ em {
   border-radius: 10px;
 
   font-size: 14px;
+}
+
+
+.confirm-modal {
+  width: min(
+    480px,
+    100%
+  );
+}
+
+
+.confirm-icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 16px;
+
+  margin-bottom: 18px;
+}
+
+
+.confirm-icon.danger {
+  background: #bd3f2d14;
+  color: #bd3f2d;
+}
+
+
+.confirm-breakdown {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+
+  margin-top: 24px;
+}
+
+
+.confirm-breakdown div {
+  padding: 14px;
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius: 14px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--line) 20%,
+      transparent
+    );
+}
+
+
+.confirm-breakdown small {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--muted);
+
+  font:
+    10px
+    var(--mono);
+
+  text-transform: uppercase;
+
+  letter-spacing: .1em;
+}
+
+
+.confirm-breakdown strong {
+  font:
+    700 20px
+    var(--serif);
+}
+
+
+.confirm-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 22px;
+}
+
+
+.button.danger.solid {
+  border: 0;
+  background: #bd3f2d;
+  color: white;
 }
 
 
@@ -2869,15 +2980,33 @@ em {
 
     flex-direction: column;
 
-    gap: 15px;
+    gap: 6px;
 
-    padding: 17px 20px;
+    padding: 10px 20px 16px;
 
     border-top:
       1px solid
       var(--line);
 
     font-weight: 600;
+
+    background:
+      color-mix(
+        in srgb,
+        var(--bg) 96%,
+        var(--card)
+      );
+  }
+
+
+  .mobile-menu a {
+    display: flex;
+
+    align-items: center;
+
+    border-radius: 12px;
+
+    padding: 8px 2px;
   }
 
 
@@ -2896,7 +3025,7 @@ em {
 
     color: var(--ink);
 
-    padding: 0;
+    padding: 8px 2px;
   }
 
 
@@ -3055,14 +3184,30 @@ em {
   .booking-end {
     width: 100%;
 
-    display: flex;
+    display: grid;
 
-    justify-content:
-      space-between;
+    grid-template-columns:
+      1fr;
 
-    align-items: center;
+    gap: 12px;
 
     text-align: left;
+  }
+
+
+  .booking-end > div,
+  .next-steps > div:last-child {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+  }
+
+
+  .booking-end .button,
+  .next-steps .button {
+    margin-left: 0;
   }
 
 
@@ -3099,6 +3244,22 @@ em {
 
     padding:
       11px 14px;
+  }
+
+
+  .confirm-breakdown {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+
+  .confirm-actions .button {
+    width: 100%;
   }
 
 }
@@ -3188,6 +3349,13 @@ em {
 
   .refund-policy-header h1 {
     font-size: 40px;
+  }
+
+
+  .modal {
+    padding: 26px;
+
+    border-radius: 20px;
   }
 
 
