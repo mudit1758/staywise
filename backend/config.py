@@ -46,13 +46,12 @@ if REFUND_FEE_PERCENT < 0 or REFUND_FEE_PERCENT > 100:
 REFUND_PERCENT = 100 - REFUND_FEE_PERCENT
 
 # --- Outgoing email (booking confirmations) -------------------------------
-SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_USE_TLS = _bool("SMTP_USE_TLS", True)
-EMAIL_FROM = os.getenv("EMAIL_FROM", SMTP_USER or "bookings@staywise.test")
+# --- Outgoing email -------------------------------------------------------
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "")
 EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "Staywise")
+
+EMAIL_ENABLED = bool(RESEND_API_KEY and EMAIL_FROM)
 
 EMAIL_ENABLED = bool(SMTP_HOST and SMTP_USER and SMTP_PASSWORD)
 RAZORPAY_ENABLED = bool(RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET)
